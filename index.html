@@ -1,0 +1,569 @@
+<div>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio mit Wort-Highlighting (SRT direkt im Code)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+    #audioPlayer {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    #textDisplay {
+      border: 1px solid #ccc;
+      padding: 15px;
+      min-height: 100px;
+      font-size: 1.2em;
+      white-space: normal;
+    }
+    .current-word {
+      background-color: #add8e6;
+      font-weight: bold;
+    }
+    .word-pair {
+      display: inline-block;
+      margin-right: 10px;
+      vertical-align: top;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+    .vietnamese-word, .german-translation {
+      display: block;
+    }
+    
+    #audioPlayer {
+      width: 100%;
+      max-width: 800px; /* Maximale Breite für den Player */
+      margin: 0 auto; /* Zentriert */
+      display: block;
+      border-radius: 10px; /* Abgerundete Ecken */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
+      position: fixed; /* Macht den Player schwebend */
+      bottom: 8%; /* Oben am Bildschirm positionieren */
+      left: 50%; /* Zentriert horizontal */
+      transform: translateX(-50%); /* Korrektur für die horizontale Zentrierung */
+      background-color: #ffffff; /* Hintergrund für den schwebenden Player */
+      padding: 10px 20px; /* Innenabstand */
+      z-index: 1000; /* Stellt sicher, dass der Player über anderem Inhalt liegt */
+      box-sizing: border-box; /* Stellt sicher, dass Padding in der Breite enthalten ist */
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Audio mit eingebetteten Untertiteln</h1>
+
+  <audio id="audioPlayer" controls>
+    <source src="My_Audio.mp3" type="audio/mpeg">
+    Ihr Browser unterstützt das Audio-Element nicht.
+  </audio>
+
+  <div id="textDisplay">Lade Text...</div>
+
+  <script>
+    const srtContent = `
+1
+00:00:00,100 --> 00:00:00,500
+Gia đình
+Familie
+
+2
+00:00:00,500 --> 00:00:00,880
+hạnh phúc
+glücklich
+
+3
+00:00:01,879 --> 00:00:01,940
+Ở
+In
+
+4
+00:00:01,940 --> 00:00:02,020
+một
+einem
+
+5
+00:00:02,020 --> 00:00:02,640
+ngôi làng
+Dorf
+
+6
+00:00:02,640 --> 00:00:02,899
+nhỏ,
+klein
+
+7
+00:00:03,319 --> 00:00:03,399
+có
+haben
+
+8
+00:00:03,399 --> 00:00:03,560
+một
+eine
+
+9
+00:00:03,560 --> 00:00:04,099
+gia đình
+Familie
+
+10
+00:00:04,099 --> 00:00:04,700
+hạnh phúc
+glücklich
+
+11
+00:00:04,700 --> 00:00:05,120
+gồm
+einschließlich
+
+12
+00:00:05,120 --> 00:00:05,259
+ba
+drei
+
+13
+00:00:05,259 --> 00:00:05,580
+người,
+Menschen
+
+14
+00:00:06,259 --> 00:00:06,379
+bố
+Vater
+
+15
+00:00:06,379 --> 00:00:06,440
+Nam,
+Nam
+
+16
+00:00:07,000 --> 00:00:07,280
+mẹ
+Muter
+
+17
+00:00:07,280 --> 00:00:07,299
+Lan
+Lan
+
+18
+00:00:07,299 --> 00:00:07,620
+và
+und
+
+19
+00:00:07,679 --> 00:00:08,240
+con gái
+Tocher
+
+20
+00:00:08,240 --> 00:00:08,419
+Mai.
+Mai.
+
+21
+00:00:09,179 --> 00:00:09,439
+Hàng ngày,
+Täglich
+
+22
+00:00:10,099 --> 00:00:10,099
+Nam
+Nam
+
+23
+00:00:10,099 --> 00:00:10,699
+làm việc
+arbeitet
+
+24
+00:00:10,839 --> 00:00:10,939
+ở
+in
+
+25
+00:00:10,939 --> 00:00:11,300
+công trường,
+Baustelle
+
+26
+00:00:12,119 --> 00:00:12,119
+Lan
+Lan
+
+27
+00:00:12,119 --> 00:00:12,640
+bán
+verkauft
+
+28
+00:00:12,640 --> 00:00:12,939
+rau
+Gemüse
+
+29
+00:00:12,939 --> 00:00:13,060
+ở
+im
+
+30
+00:00:13,060 --> 00:00:13,619
+chợ,
+Markt,
+
+31
+00:00:14,099 --> 00:00:14,099
+còn
+und
+
+32
+00:00:14,099 --> 00:00:14,480
+Mai
+Mai
+
+33
+00:00:14,480 --> 00:00:15,519
+đi học.
+zur Schule gehen
+
+34
+00:00:16,219 --> 00:00:16,219
+Một
+Eines
+
+35
+00:00:16,219 --> 00:00:16,320
+hôm,
+Tages
+
+36
+00:00:17,120 --> 00:00:17,179
+Mai
+Mai
+
+37
+00:00:17,179 --> 00:00:17,839
+bị ốm.
+krank.
+
+38
+00:00:18,500 --> 00:00:18,660
+Lan
+Lan
+
+39
+00:00:18,660 --> 00:00:18,899
+rất
+sehr
+
+40
+00:00:18,899 --> 00:00:19,500
+lo lắng
+besorgt
+
+41
+00:00:19,500 --> 00:00:19,780
+nên
+sollte
+
+42
+00:00:19,780 --> 00:00:20,120
+đã
+bereits
+
+43
+00:00:20,120 --> 00:00:20,559
+nấu
+kochen
+
+44
+00:00:20,559 --> 00:00:21,120
+cháo gà
+Hühnerbrei
+
+45
+00:00:21,120 --> 00:00:21,280
+cho
+für
+
+46
+00:00:21,280 --> 00:00:21,399
+con.
+Kind.
+
+47
+00:00:22,199 --> 00:00:22,199
+Nam
+Nam
+
+48
+00:00:22,199 --> 00:00:22,559
+cũng
+auch
+
+49
+00:00:22,559 --> 00:00:22,899
+về
+zurück
+
+50
+00:00:22,899 --> 00:00:23,320
+sớm
+früh
+
+51
+00:00:23,320 --> 00:00:23,519
+để
+lassen
+
+52
+00:00:23,519 --> 00:00:24,160
+chăm sóc
+pflegen
+
+53
+00:00:24,160 --> 00:00:24,260
+Mai.
+Mai
+
+54
+00:00:25,260 --> 00:00:25,460
+Nhờ
+Dank
+
+55
+00:00:25,460 --> 00:00:26,120
+tình yêu thương
+Liebe
+
+56
+00:00:26,120 --> 00:00:26,140
+của
+von
+
+57
+00:00:26,140 --> 00:00:26,440
+bố
+Vater
+
+58
+00:00:26,440 --> 00:00:26,640
+mẹ,
+Mutter
+
+59
+00:00:27,379 --> 00:00:27,480
+Mai
+Mai
+
+60
+00:00:27,480 --> 00:00:27,820
+mau
+schnell
+
+61
+00:00:27,820 --> 00:00:28,199
+khỏe
+gesund
+
+62
+00:00:28,199 --> 00:00:28,239
+lại.
+wieder.
+
+63
+00:00:29,519 --> 00:00:29,519
+Cuối
+Ende
+
+64
+00:00:29,519 --> 00:00:29,719
+tuần,
+Woche,
+
+65
+00:00:30,399 --> 00:00:30,519
+cả
+alle
+
+66
+00:00:30,519 --> 00:00:31,000
+gia đình
+Familie
+
+67
+00:00:31,000 --> 00:00:31,140
+cũng
+auch
+
+68
+00:00:31,140 --> 00:00:31,460
+đi
+gehen
+
+69
+00:00:31,460 --> 00:00:32,119
+công viên,
+Park
+
+70
+00:00:32,560 --> 00:00:32,640
+ăn
+essen
+
+71
+00:00:32,640 --> 00:00:33,000
+kem
+Eis
+
+72
+00:00:33,000 --> 00:00:33,140
+và
+und
+
+73
+00:00:33,179 --> 00:00:34,100
+cười đùa
+Witzig
+
+74
+00:00:34,100 --> 00:00:34,179
+vui
+fröhlich
+
+75
+00:00:34,179 --> 00:00:34,460
+vẻ.
+erscheinen.
+
+76
+00:00:35,320 --> 00:00:35,380
+Họ
+Sie
+
+77
+00:00:35,380 --> 00:00:35,560
+biết
+wissen
+
+78
+00:00:35,560 --> 00:00:35,899
+rằng
+dass
+
+79
+00:00:36,299 --> 00:00:36,740
+gia đình
+Familie
+
+80
+00:00:36,740 --> 00:00:37,020
+là
+sein
+
+81
+00:00:37,020 --> 00:00:37,380
+nơi
+Ort
+
+82
+00:00:37,380 --> 00:00:38,140
+yêu thương nhất.
+Am meisten geliebt
+
+
+
+    `
+
+    
+    .trim();
+  </script>
+
+  <script>
+    const audioPlayer = document.getElementById('audioPlayer');
+    const textDisplay = document.getElementById('textDisplay');
+
+    function parseTime(timeString) {
+      const [h, m, s] = timeString.split(':');
+      const [seconds, ms] = s.split(',');
+      return (
+        parseInt(h) * 3600000 +
+        parseInt(m) * 60000 +
+        parseInt(seconds) * 1000 +
+        parseInt(ms)
+      );
+    }
+
+    function parseSrt(srtText) {
+      const cues = [];
+      const blocks = srtText.split(/\n{2,}/);
+      for (const block of blocks) {
+        const lines = block.trim().split('\n');
+        if (lines.length < 3) continue;
+        const index = parseInt(lines[0]);
+        const timecode = lines[1];
+        const [startTime, endTime] = timecode.split('-->').map(s => parseTime(s.trim()));
+        const vietnameseText = lines[2]?.trim();
+        const germanTranslation = lines[3]?.trim() || "";
+        cues.push({ index, startTime, endTime, vietnameseText, germanTranslation });
+      }
+      return cues;
+    }
+
+    const parsedCues = parseSrt(srtContent);
+
+    function displayText(cues) {
+      textDisplay.innerHTML = '';
+      for (const cue of cues) {
+        const span = document.createElement('span');
+        span.className = 'word-pair';
+        span.id = `cue-${cue.index}`;
+
+        const vi = document.createElement('span');
+        vi.className = 'vietnamese-word';
+        vi.textContent = cue.vietnameseText;
+
+        const de = document.createElement('span');
+        de.className = 'german-translation';
+        de.textContent = cue.germanTranslation;
+
+        span.appendChild(vi);
+        span.appendChild(de);
+        textDisplay.appendChild(span);
+      }
+    }
+
+    function updateHighlight() {
+      const currentTime = audioPlayer.currentTime * 1000;
+      parsedCues.forEach(cue => {
+        const el = document.getElementById(`cue-${cue.index}`);
+        if (el) {
+          el.classList.toggle('current-word', currentTime >= cue.startTime && currentTime < cue.endTime);
+        }
+      });
+      requestAnimationFrame(updateHighlight);
+    }
+
+    displayText(parsedCues);
+    audioPlayer.addEventListener('play', () => requestAnimationFrame(updateHighlight));
+  </script>
+
+</body>
+<Footer>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</Footer>
+</html>
+</div>
